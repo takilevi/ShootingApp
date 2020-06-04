@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'home_page.dart';
 import 'authservice.dart';
 import 'login_page.dart';
+import 'signup_page.dart';
 
 void main() => runApp(
   ChangeNotifierProvider<AuthService>(
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
             }
 
             // redirect to the proper page
-            return snapshot.hasData ? HomePage(snapshot.data) : LoginPage();
+            return snapshot.hasData ? SignUpPage(snapshot.data) : LoginPage();
           } else {
             // show loading indicator
             return LoadingCircle();
