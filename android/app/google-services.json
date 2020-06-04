@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "212952398010",
+    "firebase_url": "https://shootingapp-e685e.firebaseio.com",
+    "project_id": "shootingapp-e685e",
+    "storage_bucket": "shootingapp-e685e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212952398010:android:81d1423ec1f81548312a83",
+        "android_client_info": {
+          "package_name": "com.example.shootingapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "212952398010-tpsv01lfhib37rtj2ub8esqhlconp272.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4ld9tSOC80k2kkprrTwUspc1T3IMFhNc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "212952398010-tpsv01lfhib37rtj2ub8esqhlconp272.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

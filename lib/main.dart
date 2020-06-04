@@ -1,34 +1,38 @@
-import 'dart:async';
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shootingapp/login_page.dart';
+import 'package:provider/provider.dart';
 import 'home_page.dart';
-
+import 'authservice.dart';
+import 'login_page.dart';
 
 void main() => runApp(
   ChangeNotifierProvider<AuthService>(
     create: (context) => AuthService(),
     child: MyApp(),
-  ),
-);
+));
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Shooting competition login',
+      title: 'Shooting competition app',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: FutureBuilder(
-        // get the Provider, and call the getUser method
+      home: FutureBuilder<FirebaseUser>(
         future: Provider.of<AuthService>(context).getUser(),
-        // wait for the future to resolve and render the appropriate
-        // widget for HomePage or LoginPage
-        builder: (context, AsyncSnapshot snapshot) {
+        builder: (context, AsyncSnapshot<FirebaseUser> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return snapshot.hasData ? HomePage() : LoginPage();
+            // log error to console
+            if (snapshot.error != null) {
+              print("error");
+              return Text(snapshot.error.toString());
+            }
+
+            // redirect to the proper page
+            return snapshot.hasData ? HomePage(snapshot.data) : LoginPage();
           } else {
-            return Container(color: Colors.white);
+            // show loading indicator
+            return LoadingCircle();
           }
         },
       ),
@@ -36,43 +40,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthService with ChangeNotifier {
-  var currentUser;
-
-  AuthService() {
-    print("new AuthService");
-  }
-
-  Future getUser() {
-    return Future.value(currentUser);
-  }
-
-  // wrappinhg the firebase calls
-  Future logout() {
-    this.currentUser = null;
-    notifyListeners();
-    return Future.value(currentUser);
-  }
-
-  // wrapping the firebase calls
-  Future createUser(
-      {String firstName,
-        String lastName,
-        String user,
-        String password}) async {}
-
-  // logs in the user if password matches
-  Future loginUser(String user, String password) {
-    if (password == 'password123') {
-      this.currentUser = {'user': user};
-      notifyListeners();
-      return Future.value(currentUser);
-    } else {
-      this.currentUser = null;
-      return Future.value(null);
-    }
+class LoadingCircle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        child: CircularProgressIndicator(),
+        alignment: Alignment(0.0, 0.0),
+      ),
+    );
   }
 }
-
-
-
