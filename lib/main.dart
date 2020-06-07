@@ -3,28 +3,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shootingapp/admin_home_screen.dart';
 import 'package:shootingapp/fancy_login_screen.dart';
 import 'package:shootingapp/signup_screen.dart';
 import 'home_page.dart';
 import 'authservice.dart';
-import 'login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final FirebaseApp app = FirebaseApp.instance;
   final Firestore firestore = Firestore(app: app);
 
-  runApp(
-      ChangeNotifierProvider<AuthService>(
-        create: (context) => AuthService(),
-        child: MyApp(firestore: firestore,))
-  );
+  runApp(ChangeNotifierProvider<AuthService>(
+      create: (context) => AuthService(),
+      child: MyApp(
+        firestore: firestore,
+      )));
 }
 
 class MyApp extends StatelessWidget {
   MyApp({this.firestore});
 
   final Firestore firestore;
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,14 @@ class MyApp extends StatelessWidget {
               return Text(snapshot.error.toString());
             }
             // redirect to the proper page
-            return snapshot.hasData ? SignUpScreen(currentUser: snapshot.data) : FancyLoginScreen();
+            if (snapshot.hasData) {
+              if (snapshot.data.email == "admin@shootingapp.com") {
+                return AdminHomeScreen(currentUser: snapshot.data, firestore: firestore);
+              } else {
+                return SignUpScreen(currentUser: snapshot.data);
+              }
+            }
+            return FancyLoginScreen();
           } else {
             // show loading indicator
             return LoadingCircle();

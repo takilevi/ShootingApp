@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shootingapp/authservice.dart';
+import 'package:shootingapp/signout_header.dart';
 import 'package:shootingapp/utilities/constants.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -24,8 +27,7 @@ class _SignupScreenState extends State<SignUpScreen> {
   double _largeWidthConst = 50.0;
   double _extraSmallHeightConst = 10.0;
   double _smallHeightConst = 30.0;
-  double _mediumHeightConst = 40.0;
-  double _largeHeightConst = 50.0;
+  double _formPadding = 40.0;
 
 
   String _password;
@@ -477,9 +479,36 @@ class _SignupScreenState extends State<SignUpScreen> {
     _largeWidthConst =  MediaQuery.of(context).size.width * 0.3;
     _extraSmallHeightConst = MediaQuery.of(context).size.height * 0.03;
     _smallHeightConst = MediaQuery.of(context).size.height * 0.07;
-    _mediumHeightConst = MediaQuery.of(context).size.height * 0.2;
-    _largeHeightConst = MediaQuery.of(context).size.height * 0.3;
+    _formPadding = MediaQuery.of(context).size.height * 0.05;
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'Új résztvevő regisztrálása',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'OpenSans',
+            fontSize: 25.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Color(0xFF73AEF5),
+        leading: Transform.rotate(
+          angle: 180 * pi / 180,
+          child: IconButton(
+            icon: Icon(Icons.exit_to_app),
+            iconSize: MediaQuery.of(context).size.height * 0.048,
+            color: Colors.white,
+            tooltip: 'Kijelentkezés',
+            autofocus: true,
+            onPressed: () async {
+              await Provider.of<AuthService>(context, listen: kReleaseMode)
+                  .logout();
+            },
+          ),
+        ),
+      ),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: GestureDetector(
@@ -511,7 +540,7 @@ class _SignupScreenState extends State<SignUpScreen> {
                       physics: AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.symmetric(
                         horizontal: _extraSmallWidthConst,
-                        vertical: 80.0,
+                        vertical: _formPadding,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -519,17 +548,6 @@ class _SignupScreenState extends State<SignUpScreen> {
                         mainAxisSize: MainAxisSize.min,
                         //mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Text(
-                            'Új versenyző regisztrálása',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'OpenSans',
-                              fontSize: 25.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: _extraSmallHeightConst),
                           IntrinsicHeight (
                             child: Row(
                               mainAxisSize: MainAxisSize.min,

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:shootingapp/models/user.dart';
@@ -59,7 +60,8 @@ class AuthService with ChangeNotifier {
         MDLSZ: MDLSZ,
         serialNumber: serialNumber,
         category: category,
-        division: division));
+        division: division,
+        password: password));
 
     return await u.updateProfile(info);
   }
@@ -90,4 +92,23 @@ class AuthService with ChangeNotifier {
     }
   }
 
+  Future deleteUser({String email, String password}) async {
+    try {
+      FirebaseUser user = await _auth.currentUser();
+      AuthCredential credentials =
+      EmailAuthProvider.getCredential(email: email, password: password);
+      print(user);
+      AuthResult result = await user.reauthenticateWithCredential(credentials);
+      await result.user.delete();
+      return true;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  Future deleteUserByAdmin({String email}){
+
+  }
 }
+

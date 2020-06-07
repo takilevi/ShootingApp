@@ -8,7 +8,8 @@ class User {
   final int serialNumber;
   final String category;
   final String division;
-  User({this.id, this.firstName, this.lastName, this.email, this.userRole, this.MDLSZ, this.serialNumber, this.category, this.division});
+  final String password;
+  User({this.id, this.firstName, this.lastName, this.email, this.userRole, this.MDLSZ, this.serialNumber, this.category, this.division, this.password});
   User.fromData(Map<String, dynamic> data)
       : id = data['id'],
         firstName = data['firstName'],
@@ -18,7 +19,8 @@ class User {
         MDLSZ = data['MDLSZ'],
         serialNumber = data['serialNumber'],
         category = data['category'],
-        division = data['division'];
+        division = data['division'],
+        password = data['password'];
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -30,6 +32,7 @@ class User {
       'serialNumber': serialNumber,
       'category': category,
       'division': division,
+      'password': password
     };
   }
 }
