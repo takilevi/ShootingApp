@@ -9,18 +9,6 @@ class AuthService with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final CollectionReference _usersCollectionReference = Firestore.instance.collection("users");
 
-  User _currentUser;
-  User get currentUser => _currentUser;
-
-  List<User> _allUsers = new List<User>();
-  List<User> get allUsers => _allUsers;
-
-  Future _populateCurrentUser(FirebaseUser user) async {
-    if (user != null) {
-      _currentUser = await getCurrentUser(user.uid);
-    }
-  }
-
   Future<FirebaseUser> getUser() {
     return _auth.currentUser();
   }
@@ -28,7 +16,6 @@ class AuthService with ChangeNotifier {
   // wrapping the firebase calls
   Future logout() async {
     var result = FirebaseAuth.instance.signOut();
-    _currentUser = null;
     notifyListeners();
     return result;
   }
@@ -46,7 +33,7 @@ class AuthService with ChangeNotifier {
         String division}) async {
     var email = user + '@shootingapp.com';
 
-    allUsers.forEach((element) {
+    /*allUsers.forEach((element) {
       if(element.serialNumber == serialNumber){
         throw Exception("Serial number is already in use, increase it!");
       }
@@ -55,7 +42,7 @@ class AuthService with ChangeNotifier {
       if(element.MDLSZ == MDLSZ){
         throw Exception("MDLSZ number is already in the system.");
       }
-    });
+    });*/
 
     var r = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
@@ -96,10 +83,6 @@ class AuthService with ChangeNotifier {
       var result = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      //_allUsers = await getAllUsers();
-      _currentUser = await _populateCurrentUser(result.user);
-
-
       notifyListeners();
       return result.user;
     }  catch (e) {
@@ -107,27 +90,4 @@ class AuthService with ChangeNotifier {
     }
   }
 
-  Future getCurrentUser(String uid) async {
-    try {
-      var userData = await _usersCollectionReference.document(uid).get();
-      return User.fromData(userData.data);
-    } catch (e) {
-      return e.message;
-    }
-  }
-
-  Future<List<User>> getAllUsers() async {
-    try {
-      List<User> users;
-      QuerySnapshot querySnapshot = await _usersCollectionReference.getDocuments();
-      for (int i = 0; i < querySnapshot.documents.length; i++) {
-        var a = querySnapshot.documents[i];
-        var user = User.fromData(a.data);
-        users.add(user);
-      }
-      return users;
-    } catch (e) {
-      return e.message;
-    }
-  }
 }

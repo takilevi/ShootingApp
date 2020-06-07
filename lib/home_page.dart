@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,50 +6,56 @@ import 'package:flutter/foundation.dart';
 
 import 'authservice.dart';
 
-class HomePage extends StatefulWidget {
-  final FirebaseUser currentUser;
+class MessageList extends StatelessWidget {
+  MessageList({this.firestore});
 
-  HomePage(this.currentUser);
+  final Firestore firestore;
 
   @override
-  _HomePageState createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: firestore
+          .collection("users")
+          .snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (!snapshot.hasData) return const Text('Loading...');
+        final int messageCount = snapshot.data.documents.length;
+        return ListView.builder(
+          itemCount: messageCount,
+          itemBuilder: (_, int index) {
+            final DocumentSnapshot document = snapshot.data.documents[index];
+            final dynamic email = document['email'];
+            return ListTile(
+              trailing: IconButton(
+                onPressed: () => document.reference.delete(),
+                icon: Icon(Icons.delete),
+              ),
+              title: Text(
+                email != null ? email.toString() : '<No message retrieved>',
+              ),
+              subtitle: Text('Message ${index + 1} of $messageCount'),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> {
+class MyHomePage extends StatelessWidget {
+  MyHomePage({this.firestore});
+
+  final Firestore firestore;
+
+  CollectionReference get messages => firestore.collection('users');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home Flutter Firebase"),
-        //actions: <Widget>[LogoutButton()],
+        title: const Text('Firestore Example'),
       ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: 20.0),
-            Text(
-              'Home Page Flutter Firebase  Content',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20.0),
-            Text(
-              'Welcome ${widget.currentUser.email}',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic),
-            ),
-            SizedBox(height: 20.0),
-            RaisedButton(
-                child: Text("LOGOUT"),
-                onPressed: () async {
-                  await Provider.of<AuthService>(context, listen: kReleaseMode).logout();
-
-                  //Navigator.pushReplacementNamed(context, "/");
-                })
-          ],
-        ),
-      ),
+      body: MessageList(firestore: firestore),
     );
   }
 }
