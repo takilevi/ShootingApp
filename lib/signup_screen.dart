@@ -382,6 +382,7 @@ class _SignupScreenState extends State<SignUpScreen> {
               await Provider.of<AuthService>(context, listen: kReleaseMode)
                   .createUser(firstName: _firstName, lastName: _lastName, user: _username, password: _password, userRole: _currentRole
                   , MDLSZ: _MDLSZ, serialNumber: _serialNumber, category: _category, division: _division);
+              Navigator.pop(context);
             } on AuthException catch (error) {
               return _buildErrorDialog(context, error.message);
             } on Exception catch (error) {
@@ -494,20 +495,6 @@ class _SignupScreenState extends State<SignUpScreen> {
           ),
         ),
         backgroundColor: Color(0xFF73AEF5),
-        leading: Transform.rotate(
-          angle: 180 * pi / 180,
-          child: IconButton(
-            icon: Icon(Icons.exit_to_app),
-            iconSize: MediaQuery.of(context).size.height * 0.048,
-            color: Colors.white,
-            tooltip: 'Kijelentkezés',
-            autofocus: true,
-            onPressed: () async {
-              await Provider.of<AuthService>(context, listen: kReleaseMode)
-                  .logout();
-            },
-          ),
-        ),
       ),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,

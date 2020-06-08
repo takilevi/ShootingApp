@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:shootingapp/models/user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admin/firebase_admin.dart';
 
 class AuthService with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -107,7 +108,7 @@ class AuthService with ChangeNotifier {
     }
   }
 
-  Future deleteUserByAdmin({String email}){
+  Future deleteUserByAdmin({String email}) async{
 
   }
 }

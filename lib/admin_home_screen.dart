@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shootingapp/authservice.dart';
 import 'package:shootingapp/signout_header.dart';
+import 'package:shootingapp/signup_screen.dart';
+import 'package:shootingapp/battlefield_creator_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   AdminHomeScreen({this.currentUser,this.firestore});
@@ -121,7 +123,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => BattlefieldCreatorScreen()),
+          Navigator.push(context, MaterialPageRoute(builder: (context) => BattlefieldCreatorScreen(firestore: firestore)),
           );
         },
         padding: EdgeInsets.all(15.0),
@@ -130,7 +132,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         color: Colors.white,
         child: Text(
-          'Új pálya létrehozása',
+          'Pályák menedzselése',
           style: TextStyle(
             color: Color(0xFF527DAA),
             letterSpacing: 1.5,
@@ -150,7 +152,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => BattlefieldCreatorScreen()),
+          Navigator.push(context, MaterialPageRoute(builder: (context) => JudgeToFieldScreen()),
           );
         },
         padding: EdgeInsets.all(15.0),
@@ -159,7 +161,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         color: Colors.white,
         child: Text(
-          'Új pálya létrehozása',
+          'Bíró-pálya összerendelés',
           style: TextStyle(
             color: Color(0xFF527DAA),
             letterSpacing: 1.5,
@@ -178,7 +180,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => BattlefieldCreatorScreen()),
+          Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()),
           );
         },
         padding: EdgeInsets.all(15.0),
@@ -187,7 +189,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
         color: Colors.white,
         child: Text(
-          'Új pálya létrehozása',
+          'Új résztvevő regisztrálása',
           style: TextStyle(
             color: Color(0xFF527DAA),
             letterSpacing: 1.5,
@@ -267,12 +269,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 }
 
-class BattlefieldCreatorScreen extends StatelessWidget{
+class JudgeToFieldScreen extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Új pálya létrehozása"),
+        title: Text("Bíró-pálya összerendelés"),
         backgroundColor: Color(0xFF73AEF5),
       ),
       body: Center(

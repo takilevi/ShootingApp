@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admin/firebase_admin.dart';
+import 'package:firebase_admin/src/credential.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,27 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final FirebaseApp app = FirebaseApp.instance;
   final Firestore firestore = Firestore(app: app);
+
+  /*
+  var credential = Credentials.applicationDefault();
+
+  // when no credentials found, login using openid
+  // the credentials are stored on disk for later use
+  credential ??= await Credentials.login();
+
+  // create an app
+  var adminApp = FirebaseAdmin.instance.initializeApp(AppOptions(
+      credential: credential ?? Credentials.applicationDefault(),
+      projectId: 'shootingapp'));
+
+  try {
+    // get a user by email
+    var v = await adminApp.auth().getUserByEmail('takacsl@shootingapp.com');
+    print(v.toJson());
+  } on FirebaseException catch (e) {
+    print(e.message);
+  }
+  */
 
   runApp(ChangeNotifierProvider<AuthService>(
       create: (context) => AuthService(),
@@ -46,7 +69,7 @@ class MyApp extends StatelessWidget {
               if (snapshot.data.email == "admin@shootingapp.com") {
                 return AdminHomeScreen(currentUser: snapshot.data, firestore: firestore);
               } else {
-                return SignUpScreen(currentUser: snapshot.data);
+                return SignUpScreen();
               }
             }
             return FancyLoginScreen();
