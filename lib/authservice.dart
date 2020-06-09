@@ -49,8 +49,10 @@ class AuthService with ChangeNotifier {
     var r = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     var u = r.user;
+
     UserUpdateInfo info = UserUpdateInfo();
     info.displayName = '$firstName $lastName';
+    info.photoUrl = userRole;
 
     await createFirestoreUser(User(
         id: r.user.uid,
