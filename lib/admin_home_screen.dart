@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:shootingapp/authservice.dart';
 import 'package:shootingapp/signout_header.dart';
 import 'package:shootingapp/signup_screen.dart';
-import 'package:shootingapp/battlefield_creator_screen.dart';
+import 'package:shootingapp/battlefield_manager_screen.dart';
+import 'package:shootingapp/judge_to_field_screen.dart';
+import 'package:shootingapp/user_modifier_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   AdminHomeScreen({this.currentUser,this.firestore});
@@ -97,10 +99,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      //Pályák létrehozása
-                      _buildBattlefieldBtn(),
                       //Versenyzők, bírók felvétele
                       _buildSignupBtn(),
+                      //Versenyzők adatainak módosítása
+                      _buildUserModifierBtn(),
+                      //Pályák létrehozása
+                      _buildBattlefieldBtn(),
                       //Bíró-pálya összerendelés
                       _buildJudgeToFieldBtn(),
                       //Előző verseny maradványainak kitakarítása - userek, pályák törlése
@@ -123,7 +127,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => BattlefieldCreatorScreen(firestore: firestore)),
+          Navigator.push(context, MaterialPageRoute(builder: (context) => BattlefieldManagerScreen(firestore: firestore)),
           );
         },
         padding: EdgeInsets.all(15.0),
@@ -152,7 +156,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => JudgeToFieldScreen()),
+          Navigator.push(context, MaterialPageRoute(builder: (context) => JudgeToFieldScreen(firestore:firestore)),
           );
         },
         padding: EdgeInsets.all(15.0),
@@ -202,6 +206,35 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
+  Widget _buildUserModifierBtn() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 50.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => UserModifierScreen(firestore: firestore)),
+          );
+        },
+        padding: EdgeInsets.all(15.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'Versenyzők adatainak módosítása',
+          style: TextStyle(
+            color: Color(0xFF527DAA),
+            letterSpacing: 1.5,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSwipeAllDataBtn(Firestore firestore) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 50.0),
@@ -215,10 +248,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           }
           await firestore.collection('users').getDocuments().then((snapshot) {
             for (DocumentSnapshot ds in snapshot.documents) {
-              if(ds.data['email']!='takacsl@shootingapp.com'){
+              if(ds.data['userRole']!='ADMIN'){
                 Provider.of<AuthService>(context, listen: kReleaseMode).deleteUser(email: ds.data['email'], password: ds.data['password']);
                 ds.reference.delete();
               }
+            }
+          });
+
+          await firestore.collection('battlefields').getDocuments().then((snapshot) {
+            for (DocumentSnapshot ds in snapshot.documents) {
+                ds.reference.delete();
             }
           });
         },
@@ -266,20 +305,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       if (exit == null) return;
       return exit;
     });
-  }
-}
-
-class JudgeToFieldScreen extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Bíró-pálya összerendelés"),
-        backgroundColor: Color(0xFF73AEF5),
-      ),
-      body: Center(
-      ),
-    );
   }
 }
 

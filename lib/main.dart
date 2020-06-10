@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_admin/firebase_admin.dart';
-import 'package:firebase_admin/src/credential.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:shootingapp/admin_home_screen.dart';
 import 'package:shootingapp/fancy_login_screen.dart';
 import 'package:shootingapp/signup_screen.dart';
-import 'home_page.dart';
 import 'authservice.dart';
+import 'package:shootingapp/judge_result_recorder_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,8 +64,10 @@ class MyApp extends StatelessWidget {
             }
             // redirect to the proper page
             if (snapshot.hasData) {
-              if (snapshot.data.email == "admin@shootingapp.com") {
+              if (snapshot.data.photoUrl == "ADMIN") {
                 return AdminHomeScreen(currentUser: snapshot.data, firestore: firestore);
+              } else if (snapshot.data.photoUrl == "BÍRÓ"){
+                return JudgeResultRecorderScreen(currentUser: snapshot.data, firestore: firestore);
               } else {
                 return SignUpScreen();
               }

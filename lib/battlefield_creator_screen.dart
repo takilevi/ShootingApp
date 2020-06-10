@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shootingapp/authservice.dart';
+import 'package:shootingapp/models/battlefield.dart';
 import 'package:shootingapp/utilities/constants.dart';
+import 'package:shootingapp/utilities/weapon_aim2_icons.dart';
+import 'package:shootingapp/utilities/weapon_aim_icons.dart';
 
 class BattlefieldCreatorScreen extends StatefulWidget {
   BattlefieldCreatorScreen({this.firestore});
@@ -29,9 +32,7 @@ class _BattlefieldCreatorScreenState extends State<BattlefieldCreatorScreen> {
   double _smallHeightConst = 30.0;
   double _formPadding = 40.0;
   double _checkBoxPadding = 5.0;
-
-  var _mySelection;
-  var _queryCat;
+  var jokerPenalty = [false, false];
 
   String _id;
   String _description;
@@ -59,7 +60,7 @@ class _BattlefieldCreatorScreenState extends State<BattlefieldCreatorScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Pályák menedzselése',
+          'Pálya létrehozása',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white,
@@ -109,7 +110,7 @@ class _BattlefieldCreatorScreenState extends State<BattlefieldCreatorScreen> {
                         mainAxisSize: MainAxisSize.min,
                         //mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          buildFieldList(firestore),
+                          _buildIdTF(),
                           SizedBox(
                             height: _extraSmallHeightConst,
                           ),
@@ -175,23 +176,7 @@ class _BattlefieldCreatorScreenState extends State<BattlefieldCreatorScreen> {
                           SizedBox(
                             height: _smallHeightConst,
                           ),
-                          IntrinsicHeight(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: <Widget>[
-                                Flexible(
-                                    fit: FlexFit.loose,
-                                    child: _buildModifyFieldBtn()),
-                                SizedBox(
-                                  width: _smallWidthConst,
-                                ),
-                                Flexible(
-                                    fit: FlexFit.loose,
-                                    child: _buildDeleteFieldBtn()),
-                              ],
-                            ),
-                          ),
+                          _buildAddFieldBtn()
                         ],
                       ),
                     ),
@@ -200,598 +185,461 @@ class _BattlefieldCreatorScreenState extends State<BattlefieldCreatorScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Add your onPressed code here!
-        },
-        label: Text(
-          'Új pálya',
-          style: TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'OpenSans',
-          ),
-        ),
-        icon: Icon(Icons.add),
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF527DAA),
-      ),
     );
   }
 
-  Widget buildFieldList(Firestore firestore) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildIdTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Flexible(
-            fit: FlexFit.loose,
-            child: Container(
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  ),
-                ),
-                padding: EdgeInsets.only(
-                    left: 15.0, right: 15.0, top: 10, bottom: 10),
-                child: StreamBuilder<QuerySnapshot>(
-                    stream: Firestore.instance
-                        .collection('battlefields')
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) return const Text('Loading...');
-                      var length = snapshot.data.documents.length;
-                      DocumentSnapshot ds = snapshot.data.documents[length - 1];
-                      _queryCat = snapshot.data.documents;
-                      return Flexible(
-                          fit: FlexFit.loose,
-                          child: DropdownButton(
-                            underline: Container(),
-                            icon: Icon(Icons.arrow_drop_down_circle),
-                            iconEnabledColor: Color(0xFF527DAA),
-                            iconDisabledColor: Colors.white,
-                            elevation: 5,
-                            hint: Text('Válassz pályát',
-                                style: TextStyle(
-                                  color: Color(0xFF527DAA),
-                                  letterSpacing: 1.5,
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'OpenSans',
-                                )),
-                            value: _mySelection,
-                            isDense: true,
-                            onChanged: changedDropDownItem,
-                            items: snapshot.data.documents
-                                .map((DocumentSnapshot document) {
-                              return new DropdownMenuItem<String>(
-                                  value: document.data['id'],
-                                  child: Center(
-                                      child: Text(
-                                          [
-                                            document.data['id'],
-                                            " - ",
-                                            document.data['competitionType']
-                                          ].join(),
-                                          style: TextStyle(
-                                            color: Color(0xFF527DAA),
-                                            letterSpacing: 1.5,
-                                            fontSize: 18.0,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'OpenSans',
-                                          ))));
-                            }).toList(),
-                            style: TextStyle(
-                              color: Color(0xFF527DAA),
-                              letterSpacing: 1.5,
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'OpenSans',
-                            ),
-                          ));
-                    }))),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: _smallHeightConst,
+          child: TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Kötelező azonosítót megadni';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onSaved: (value) => _id = value,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'OpenSans',
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 2.0),
+              prefixIcon: Icon(
+                Icons.map, //explore, info, map
+                color: Colors.white,
+              ),
+              labelText: 'Azonosító',
+              labelStyle: kHintTextStyle,
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildDescriptionTF() {
-    if (_mySelection != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            alignment: Alignment.centerLeft,
-            decoration: kBoxDecorationStyle,
-            height: _smallHeightConst,
-            child: TextFormField(
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
-              controller: _description != null
-                  ? TextEditingController.fromValue(
-                      TextEditingValue(text: _description))
-                  : null,
-              onSaved: (value) => _description = value,
-              style: TextStyle(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: _smallHeightConst,
+          child: TextFormField(
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onSaved: (value) => _description = value,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'OpenSans',
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 2.0),
+              prefixIcon: Icon(
+                Icons.description,
                 color: Colors.white,
-                fontFamily: 'OpenSans',
               ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(top: 2.0),
-                prefixIcon: Icon(
-                  Icons.description,
-                  color: Colors.white,
-                ),
-                labelText: 'Leírás',
-                labelStyle: kHintTextStyle,
-              ),
+              labelText: 'Leírás',
+              labelStyle: kHintTextStyle,
             ),
           ),
-        ],
-      );
-    }
-    return Container();
+        ),
+      ],
+    );
   }
 
   Widget _buildCompetitionTypeTF() {
-    if (_mySelection != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            alignment: Alignment.centerLeft,
-            decoration: kBoxDecorationStyle,
-            height: _smallHeightConst,
-            child: TextFormField(
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
-              controller: _competitionType != null
-                  ? TextEditingController.fromValue(
-                      TextEditingValue(text: _competitionType))
-                  : null,
-              onSaved: (value) => _competitionType = value,
-              style: TextStyle(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: _smallHeightConst,
+          child: TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Kötelező typust megadni';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onSaved: (value) => _competitionType = value,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'OpenSans',
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 2.0),
+              prefixIcon: Icon(
+                Icons.adjust,
                 color: Colors.white,
-                fontFamily: 'OpenSans',
               ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(top: 2.0),
-                prefixIcon: Icon(
-                  Icons.adjust,
-                  color: Colors.white,
-                ),
-                labelText: 'Pályacél',
-                labelStyle: kHintTextStyle,
-              ),
+              labelText: 'Pályacél',
+              labelStyle: kHintTextStyle,
             ),
           ),
-        ],
-      );
-    }
-    return Container();
+        ),
+      ],
+    );
   }
 
   Widget _buildPenaltyVetlenCB() {
-    if (_mySelection != null) {
-      return Container(
-          decoration: kBoxDecorationStyle,
-          padding: EdgeInsets.only(
-              left: _checkBoxPadding,
-              right: _checkBoxPadding,
-              top: _checkBoxPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Vétlen',
-                style: TextStyle(
-                  letterSpacing: 1.5,
-                  fontSize: 15.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'OpenSans',
-                ),
+    return Container(
+        decoration: kBoxDecorationStyle,
+        padding: EdgeInsets.only(
+            left: _checkBoxPadding,
+            right: _checkBoxPadding,
+            top: _checkBoxPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Vétlen',
+              style: TextStyle(
+                letterSpacing: 1.5,
+                fontSize: 15.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
               ),
-              SizedBox(
-                height: _checkBoxPadding,
+            ),
+            SizedBox(
+              height: _checkBoxPadding,
+            ),
+            Theme(
+              data: ThemeData(unselectedWidgetColor: Colors.white),
+              child: Checkbox(
+                value: _penaltyVetlen,
+                onChanged: (bool value) {
+                  setState(() {
+                    _penaltyVetlen = value;
+                  });
+                },
+                activeColor: Color(0xFF398AE5),
               ),
-              Theme(
-                data: ThemeData(unselectedWidgetColor: Colors.white),
-                child: Checkbox(
-                  value: _penaltyVetlen,
-                  onChanged: (bool value) {
-                    setState(() {
-                      _penaltyVetlen = value;
-                    });
-                  },
-                  activeColor: Color(0xFF398AE5),
-                ),
-              ),
-            ],
-          ));
-    }
-    return Container();
+            ),
+          ],
+        ));
   }
 
   Widget _buildPenaltyEljarasiCB() {
-    if (_mySelection != null) {
-      return Container(
-          decoration: kBoxDecorationStyle,
-          padding: EdgeInsets.only(
-              left: _checkBoxPadding,
-              right: _checkBoxPadding,
-              top: _checkBoxPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Eljárási',
-                style: TextStyle(
-                  letterSpacing: 1.5,
-                  fontSize: 15.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'OpenSans',
-                ),
+    return Container(
+        decoration: kBoxDecorationStyle,
+        padding: EdgeInsets.only(
+            left: _checkBoxPadding,
+            right: _checkBoxPadding,
+            top: _checkBoxPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Eljárási',
+              style: TextStyle(
+                letterSpacing: 1.5,
+                fontSize: 15.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
               ),
-              SizedBox(
-                height: _checkBoxPadding,
+            ),
+            SizedBox(
+              height: _checkBoxPadding,
+            ),
+            Theme(
+              data: ThemeData(unselectedWidgetColor: Colors.white),
+              child: Checkbox(
+                value: _penaltyEljarasi,
+                onChanged: (bool value) {
+                  setState(() {
+                    _penaltyEljarasi = value;
+                  });
+                },
+                activeColor: Color(0xFF398AE5),
               ),
-              Theme(
-                data: ThemeData(unselectedWidgetColor: Colors.white),
-                child: Checkbox(
-                  value: _penaltyEljarasi,
-                  onChanged: (bool value) {
-                    setState(() {
-                      _penaltyEljarasi = value;
-                    });
-                  },
-                  activeColor: Color(0xFF398AE5),
-                ),
-              ),
-            ],
-          ));
-    }
-    return Container();
+            ),
+          ],
+        ));
   }
 
   Widget _buildPenaltyMNTCB() {
-    if (_mySelection != null) {
-      return Container(
-          decoration: kBoxDecorationStyle,
-          padding: EdgeInsets.only(
-              left: _checkBoxPadding,
-              right: _checkBoxPadding,
-              top: _checkBoxPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'MNT',
-                style: TextStyle(
-                  letterSpacing: 1.5,
-                  fontSize: 15.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'OpenSans',
-                ),
+    return Container(
+        decoration: kBoxDecorationStyle,
+        padding: EdgeInsets.only(
+            left: _checkBoxPadding,
+            right: _checkBoxPadding,
+            top: _checkBoxPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'MNT',
+              style: TextStyle(
+                letterSpacing: 1.5,
+                fontSize: 15.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
               ),
-              SizedBox(
-                height: _checkBoxPadding,
+            ),
+            SizedBox(
+              height: _checkBoxPadding,
+            ),
+            Theme(
+              data: ThemeData(unselectedWidgetColor: Colors.white),
+              child: Checkbox(
+                value: _penaltyMNT,
+                onChanged: (bool value) {
+                  setState(() {
+                    _penaltyMNT = value;
+                  });
+                },
+                activeColor: Color(0xFF398AE5),
               ),
-              Theme(
-                data: ThemeData(unselectedWidgetColor: Colors.white),
-                child: Checkbox(
-                  value: _penaltyMNT,
-                  onChanged: (bool value) {
-                    setState(() {
-                      _penaltyMNT = value;
-                    });
-                  },
-                  activeColor: Color(0xFF398AE5),
-                ),
-              ),
-            ],
-          ));
-    }
-    return Container();
+            ),
+          ],
+        ));
   }
 
   Widget _buildPenaltyAlakCB() {
-    if (_mySelection != null) {
-      return Container(
-          decoration: kBoxDecorationStyle,
-          padding: EdgeInsets.only(
-              left: _checkBoxPadding,
-              right: _checkBoxPadding,
-              top: _checkBoxPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Alak',
-                style: TextStyle(
-                  letterSpacing: 1.5,
-                  fontSize: 15.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'OpenSans',
-                ),
+    return Container(
+        decoration: kBoxDecorationStyle,
+        padding: EdgeInsets.only(
+            left: _checkBoxPadding,
+            right: _checkBoxPadding,
+            top: _checkBoxPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Alak',
+              style: TextStyle(
+                letterSpacing: 1.5,
+                fontSize: 15.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
               ),
-              SizedBox(
-                height: _checkBoxPadding,
+            ),
+            SizedBox(
+              height: _checkBoxPadding,
+            ),
+            Theme(
+              data: ThemeData(unselectedWidgetColor: Colors.white),
+              child: Checkbox(
+                value: _penaltyAlak,
+                onChanged: (bool value) {
+                  setState(() {
+                    _penaltyAlak = value;
+                  });
+                },
+                activeColor: Color(0xFF398AE5),
               ),
-              Theme(
-                data: ThemeData(unselectedWidgetColor: Colors.white),
-                child: Checkbox(
-                  value: _penaltyAlak,
-                  onChanged: (bool value) {
-                    setState(() {
-                      _penaltyAlak = value;
-                    });
-                  },
-                  activeColor: Color(0xFF398AE5),
-                ),
-              ),
-            ],
-          ));
-    }
-    return Container();
+            ),
+          ],
+        ));
   }
 
   Widget _buildPenaltyEgyebCB() {
-    if (_mySelection != null) {
-      return Container(
-          decoration: kBoxDecorationStyle,
-          padding: EdgeInsets.only(
-              left: _checkBoxPadding,
-              right: _checkBoxPadding,
-              top: _checkBoxPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Egyéb',
-                style: TextStyle(
-                  letterSpacing: 1.5,
-                  fontSize: 15.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'OpenSans',
-                ),
+    return Container(
+        decoration: kBoxDecorationStyle,
+        padding: EdgeInsets.only(
+            left: _checkBoxPadding,
+            right: _checkBoxPadding,
+            top: _checkBoxPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Egyéb',
+              style: TextStyle(
+                letterSpacing: 1.5,
+                fontSize: 15.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
               ),
-              SizedBox(
-                height: _checkBoxPadding,
+            ),
+            SizedBox(
+              height: _checkBoxPadding,
+            ),
+            Theme(
+              data: ThemeData(unselectedWidgetColor: Colors.white),
+              child: Checkbox(
+                value: _penaltyEgyeb,
+                onChanged: (bool value) {
+                  setState(() {
+                    _penaltyEgyeb = value;
+                  });
+                },
+                activeColor: Color(0xFF398AE5),
               ),
-              Theme(
-                data: ThemeData(unselectedWidgetColor: Colors.white),
-                child: Checkbox(
-                  value: _penaltyEgyeb,
-                  onChanged: (bool value) {
-                    setState(() {
-                      _penaltyEgyeb = value;
-                    });
-                  },
-                  activeColor: Color(0xFF398AE5),
-                ),
-              ),
-            ],
-          ));
-    }
-    return Container();
+            ),
+          ],
+        ));
   }
 
   Widget _buildPenaltyJokerCB() {
-    if (_mySelection != null) {
-      return Container(
-          decoration: kBoxDecorationStyle,
-          padding: EdgeInsets.only(
-              left: _checkBoxPadding,
-              right: _checkBoxPadding,
-              top: _checkBoxPadding),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Expanded(
-                flex: 2,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        'Nyílt',
-                        style: TextStyle(
-                          letterSpacing: 1.5,
-                          fontSize: 15.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'OpenSans',
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: _checkBoxPadding,
-                    ),
-                    Expanded(
-                        child: Text(
-                      'Optikai',
-                      style: TextStyle(
-                        letterSpacing: 1.5,
-                        fontSize: 15.0,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'OpenSans',
-                      ),
-                    )),
-                  ],
-                ),
+    return Container(
+        decoration: kBoxDecorationStyle,
+        padding: EdgeInsets.only(
+            left: _checkBoxPadding,
+            right: _checkBoxPadding,
+            top: _checkBoxPadding,
+            bottom: _checkBoxPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Joker',
+              style: TextStyle(
+                letterSpacing: 1.5,
+                fontSize: 15.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
               ),
-              Expanded(
-                flex: 2,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Theme(
-                        data: ThemeData(unselectedWidgetColor: Colors.white),
-                        child: Checkbox(
-                          value: _penaltyJokerNyilt,
-                          onChanged: (bool value) {
-                            setState(() {
-                              _penaltyJokerNyilt = value;
-                            });
-                          },
-                          activeColor: Color(0xFF398AE5),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: _checkBoxPadding,
-                    ),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Theme(
-                        data: ThemeData(unselectedWidgetColor: Colors.white),
-                        child: Checkbox(
-                          value: _penaltyJokerOptikai,
-                          onChanged: (bool value) {
-                            setState(() {
-                              _penaltyJokerOptikai = value;
-                            });
-                          },
-                          activeColor: Color(0xFF398AE5),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+            SizedBox(
+              height: _checkBoxPadding,
+            ),
+            Flexible(
+              fit: FlexFit.loose,
+              child: ToggleButtons(
+                color: Color(0xFF398AE5),
+                selectedColor: Colors.white,
+                selectedBorderColor: Colors.white,
+                borderColor: Color(0xFF6CA8F1),
+                children: <Widget>[
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Icon(WeaponAim2.iron_sigh_notarget),
+                  ),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Icon(WeaponAim.crosshairs),
+                  )
+                ],
+                onPressed: (int index) {
+                  setState(() {
+                    for (int buttonIndex = 0;
+                        buttonIndex < jokerPenalty.length;
+                        buttonIndex++) {
+                      if (buttonIndex == index) {
+                        jokerPenalty[buttonIndex] = !jokerPenalty[buttonIndex];
+                      } else {
+                        jokerPenalty[buttonIndex] = false;
+                      }
+                      if (buttonIndex == 0) {
+                        _penaltyJokerNyilt = jokerPenalty[buttonIndex];
+                      }
+                      if (buttonIndex == 1) {
+                        _penaltyJokerOptikai = jokerPenalty[buttonIndex];
+                      }
+                    }
+                  });
+                },
+                isSelected: jokerPenalty,
               ),
-            ],
-          ));
-    }
-    return Container();
+            ),
+          ],
+        ));
   }
 
-  Widget _buildModifyFieldBtn() {
-    if (_mySelection != null) {
-      return Container(
-        padding: EdgeInsets.symmetric(vertical: 50.0),
-        width: double.infinity,
-        child: RaisedButton(
-          elevation: 5.0,
-          onPressed: () async {
-            // save the fields..
-            final form = _formKey.currentState;
-            form.save();
+  Widget _buildAddFieldBtn() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 50.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          // save the fields..
+          final form = _formKey.currentState;
+          form.save();
 
-            // Validate will return true if is valid, or false if invalid.
-            if (form.validate()) {
-              try {
-                await modifyField(firestore);
-              } on Exception catch (error) {
-                return _buildErrorDialog(context, error.toString());
-              } catch (error) {
-                return _buildErrorDialog(context, error.toString());
-              }
+          // Validate will return true if is valid, or false if invalid.
+          if (form.validate()) {
+            try {
+              await addField(
+                  firestore: firestore,
+                  battlefield: Battlefield(
+                      id: _id,
+                      description: _description,
+                      competitionType: _competitionType,
+                      judgeIds: [],
+                      penaltyAlak: _penaltyAlak,
+                      penaltyEgyeb: _penaltyEgyeb,
+                      penaltyEljarasi: _penaltyEljarasi,
+                      penaltyVetlen: _penaltyVetlen,
+                      penaltyMNT: _penaltyMNT,
+                      penaltyJokerNyilt: _penaltyJokerNyilt,
+                      penaltyJokerOptikai: _penaltyJokerOptikai));
+              Navigator.pop(context);
+            } on Exception catch (error) {
+              return _buildErrorDialog(context, error.toString());
+            } catch (error) {
+              return _buildErrorDialog(context, error.toString());
             }
-          },
-          padding: EdgeInsets.all(15.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-          color: Colors.white,
-          child: Text(
-            'MÓDOSÍTÁS',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Color(0xFF527DAA),
-              letterSpacing: 1.2,
-              fontSize: 15.0,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'OpenSans',
-            ),
+          }
+        },
+        padding: EdgeInsets.all(15.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'MENTÉS',
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Color(0xFF527DAA),
+            letterSpacing: 1.2,
+            fontSize: 15.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
           ),
         ),
-      );
-    }
-    return Container();
+      ),
+    );
   }
 
-  Widget _buildDeleteFieldBtn() {
-    if (_mySelection != null) {
-      return Container(
-        padding: EdgeInsets.symmetric(vertical: 50.0),
-        width: double.infinity,
-        child: RaisedButton(
-          elevation: 5.0,
-          onPressed: () async {
-            // save the fields..
-            final form = _formKey.currentState;
-            form.save();
+  Future addField({Firestore firestore, Battlefield battlefield}) async {
 
-            // Validate will return true if is valid, or false if invalid.
-            if (form.validate()) {
-              try {
-                await deleteField(firestore);
-              } on Exception catch (error) {
-                return _buildErrorDialog(context, error.toString());
-              } catch (error) {
-                return _buildErrorDialog(context, error.toString());
-              }
-            }
-          },
-          padding: EdgeInsets.all(15.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-          color: Colors.white,
-          child: Text(
-            'TÖRLÉS',
-            style: TextStyle(
-              color: Color(0xFF527DAA),
-              letterSpacing: 1.2,
-              fontSize: 15.0,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'OpenSans',
-            ),
-          ),
-        ),
-      );
+    final QuerySnapshot result =
+    await firestore.collection('battlefields').where('id', isEqualTo:
+    battlefield.id).getDocuments();
+
+    final List < DocumentSnapshot > documents = result.documents;
+    if (documents.length != 0) {
+      throw Exception("Ilyen pálya már létezik, adj meg másik azonosítót!");
     }
-    return Container();
-  }
 
-  Future modifyField(Firestore firestore) {}
-
-  Future deleteField(Firestore firestore) {}
-
-  void changedDropDownItem(var selectedField) {
-    print("Selected role $selectedField, we are going to refresh the UI");
-    setState(() {
-      for (DocumentSnapshot document in _queryCat) {
-        if (document.data['id'] == selectedField) {
-          print(document.data['id']);
-          _id = document.data['id'];
-          _description = document.data['description'];
-        }
-      }
-      _mySelection = selectedField;
-    });
+    try {
+      await firestore
+          .collection("battlefields")
+          .document(battlefield.id)
+          .setData(battlefield.toJson());
+    } catch (e) {
+      return e.message;
+    }
   }
 
   Future _buildErrorDialog(BuildContext context, _message) {

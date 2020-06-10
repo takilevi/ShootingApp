@@ -46,10 +46,20 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  fonts:
+  - family:  WeaponAim
+    fonts:
+    - asset: fonts/WeaponAim.ttf
+  - family:  WeaponAim2
+    fonts:
+      - asset: fonts/WeaponAim2.ttf
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/icons/pngguru.com.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
